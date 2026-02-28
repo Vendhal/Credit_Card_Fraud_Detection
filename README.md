@@ -2,31 +2,67 @@
 
 Fraud Detection System using AI Battle Strategy
 
-## Quick Start
+## What is BOC?
+
+Battle of Civilizations (BOC) is an AI framework that uses:
+- **Hive GAN** - Generates synthetic fraud data using 4 different GANs
+- **Great Convergence** - East (LightGBM) vs West (XGBoost) battle system
+- **Safe OOF** - Rigorous evaluation to prevent overfitting
+
+**Results: Up to 89% F1 on credit card fraud detection!**
+
+---
+
+## Prerequisites
 
 ### 1. Install Dependencies
 
 ```bash
-# Python
+# Python - install all required packages
 pip install -r requirements.txt
 
-# React (in project folder)
+# React - install frontend dependencies
 cd project
 npm install
 ```
 
-### 2. Run the Pipeline
+### 2. Get the Data
 
+Download the Credit Card Fraud dataset from Kaggle:
+https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+
+Place `creditcard.csv` in `data/raw/`
+
+---
+
+## Complete Pipeline (3 Steps)
+
+### Step 1: Preprocess Data
 ```bash
-cd skill_palavar
+python preprocess_clean.py
+```
+Creates train/test splits in `data/preprocessed_clean/`
+
+### Step 2: Train Hive GAN (Optional - generates synthetic frauds)
+```bash
+python train_hive_gan.py
+```
+Creates synthetic fraud samples in `outputs/hive_synthetic.npy`
+
+### Step 3: Run BOC Pipeline
+```bash
 python ultimate_hive_convergence_safe_oof.py
 ```
 
-Results will be saved to `outputs/`
+This trains the full model and saves results to `outputs/`
 
-### 3. Run the Dashboard
+**Time**: ~1.5-2 hours on GPU
 
-#### Option A: Windows (Simple - fallback mode)
+---
+
+## Running the Dashboard
+
+### Option A: Windows
 ```bash
 # Terminal 1: Start API
 cd project/api
@@ -37,9 +73,9 @@ cd project
 npm run dev
 ```
 
-#### Option B: WSL (Full - REAL BOC model with cuML!)
+### Option B: WSL (with GPU/cuML)
 ```bash
-# Run in WSL terminal:
+# Run in WSL:
 bash project/api/run_api_wsl.sh
 
 # Then in another terminal:
@@ -47,16 +83,7 @@ cd project
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser!
-
----
-
-## What It Does
-
-1. **Hive GAN** - Generates synthetic fraud data
-2. **Great Convergence** - East vs West AI battle
-3. **Safe OOF** - No overfitting evaluation
-4. **Results** - F1 ~0.90 (Top 10% on Kaggle!)
+Open http://localhost:5173
 
 ---
 
@@ -67,14 +94,13 @@ Open http://localhost:5173 in your browser!
 | `ultimate_hive_convergence_safe_oof.py` | Main pipeline |
 | `preprocess_clean.py` | Data preprocessing |
 | `train_hive_gan.py` | Train GANs |
-| `app.py` | Streamlit UI |
 | `project/` | React Dashboard |
 
 ---
 
-## Results(One of the Results)
+## Results
 
 - **OOF F1**: 0.92-0.93
-- **Test F1**: 0.8984
-- **Precision**: 0.91
-- **Recall**: 0.89
+- **Test F1**: 0.85-0.90
+- **Precision**: ~0.91
+- **Recall**: ~0.89
