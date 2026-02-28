@@ -1,0 +1,82 @@
+# ================================================================
+# Quantum Mega Hybrid GAN - Complete Requirements
+# ================================================================
+# Generated: 2026-02-12
+# Project: Fraud Detection with Quantum GAN Ensemble
+# ================================================================
+
+# -------------------- Core Deep Learning --------------------
+torch>=2.2.0              # PyTorch for neural networks
+torchvision>=0.17.0       # Vision utilities (may be used)
+numpy>=1.26.0             # Numerical computing (Updated for Python 3.11/3.12)
+scipy>=1.11.0             # Scientific computing
+
+# -------------------- Machine Learning --------------------
+scikit-learn>=1.3.0       # ML models and preprocessing
+pandas>=2.1.0             # Data manipulation
+imbalanced-learn>=0.11.0  # Optional balancing techniques if needed
+xgboost>=2.0.0            # XGBoost models (used in Great Convergence)
+
+# -------------------- Visualization --------------------
+matplotlib>=3.7.0         # Plotting
+seaborn>=0.12.0          # Statistical visualization
+plotly>=5.14.0           # Interactive plots
+
+# -------------------- Explainability --------------------
+shap>=0.42.0             # SHAP explanations
+
+# -------------------- Fuzzy Logic --------------------
+scikit-fuzzy>=0.4.2      # Fuzzy logic system
+
+# -------------------- NLP (Optional for BERT) --------------------
+# NLP validation tools:
+transformers>=4.38.0      # Hugging Face transformers (BERT)
+tokenizers>=0.15.0        # Fast tokenizers
+
+# -------------------- Hyperparameter Tuning (Optional) --------------------
+# Uncomment for Optuna auto-tuning:
+# optuna>=3.2.0          # Hyperparameter optimization
+
+# -------------------- Web Interface --------------------
+streamlit>=1.25.0        # Web UI dashboard
+
+# -------------------- Utilities --------------------
+tqdm>=4.65.0             # Progress bars
+joblib>=1.3.0            # Model serialization
+
+# -------------------- Development Tools --------------------
+jupyter>=1.0.0           # Jupyter notebooks
+ipywidgets>=8.0.0        # Interactive widgets
+
+# ================================================================
+# Installation Instructions:
+# ================================================================
+# 
+# Basic installation (CPU):
+#   pip install -r requirements.txt
+#
+# GPU support (CUDA for Neural Networks):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+#   pip install -r requirements.txt
+#
+# 🚀 RAPIDS (cuML) GPU Acceleration (Highly Recommended for Linux/WSL):
+#   To enable 50x-100x speedups in the Great Convergence (SVMs, Random Forests),
+#   you must install NVIDIA RAPIDS (cuML). 
+#   Because RAPIDS has strict environment dependencies, install it via Conda/Mamba:
+#   conda create -n rapids-24.02 -c rapidsai -c conda-forge -c nvidia \
+#       rapids=24.02 python=3.10 cuda-version=11.8
+#
+# With NLP BERT support:
+#   pip install -r requirements.txt (Transformers are now default)
+#
+# With Optuna tuning:
+#   Uncomment optuna above, then:
+#   pip install -r requirements.txt
+#
+# ================================================================
+# Verify Installation:
+# ================================================================
+# python -c "import torch; print(f'PyTorch: {torch.__version__}')"
+# python -c "import torch; print(f'CUDA Available: {torch.cuda.is_available()}')"
+# python -c "try: import cuml; print('✅ RAPIDS cuML Installed!'); except ImportError: print('❌ cuML not found')"
+# ================================================================

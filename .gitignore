@@ -1,0 +1,93 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+venv_gpu/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# PyTorch
+*.pth
+*.pt
+checkpoints/
+
+# Data & Outputs
+Dataset/
+data/raw/
+data/preprocessed_clean/*.npy
+models/*.joblib
+outputs/*.json
+
+# Environment
+.env
+.env.local
+*.env
+
+# Streamlit
+.streamlit/
+.streamlit.secrets
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Logs
+*.log
+logs/
+long_*.log
+gpu_test_*.log
+quick_test_*.log
+rama_*.log
+
+# Temporary
+tmp/
+temp/
+*.tmp
+nul
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Kaggle
+.kaggle/
+
+# Experiments (kept but not tracked)
+experiments/
+
+# External frameworks
+hive-gan-framework/
+
+# React/node_modules
+project/node_modules/
