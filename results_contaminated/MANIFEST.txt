@@ -1,0 +1,52 @@
+# 🚨 CONTAMINATED RESULTS MANIFEST
+# ================================
+# These results were generated with data that had scaler leakage
+# (scaler fitted on train+test instead of train only)
+# 
+# DO NOT USE THESE FOR FINAL REPORTS OR PUBLICATIONS
+# Use results from 'clean_experiments/' directory instead
+#
+# Generated: 2026-02-17
+
+## OUTPUT FILES (Contaminated)
+- outputs/arena_trained.pkl
+- outputs/comparison/comparison_report.txt
+- outputs/epoch_samples/epoch_015_samples.npy
+- outputs/explanations.txt
+- outputs/great_convergence_results.json
+- outputs/great_convergence_trained.pkl
+- outputs/hive_synthetic.npy
+- outputs/kurukshetra_trained.pkl
+- outputs/missed_frauds_features.npy
+- outputs/missed_frauds_indices.npy
+- outputs/missed_frauds_probabilities.npy
+- outputs/model_metrics.json
+- outputs/vanilla_synthetic.npy
+
+## CHECKPOINT FILES (Contaminated)
+- checkpoints/hive/*.pkl
+- checkpoints/hive_gan/*.pth
+- checkpoints/vanilla_gan/*.pth
+
+## LOG FILES (Contaminated)
+- gpu_test_output.log
+- long_gpu_training.log
+- long_training.log
+- quick_test_output.log
+- rama_dharma_training.log
+- test_aggressive_rama.log
+- test_diversity_fix.log
+- test_moe_100k.log
+- test_rama_protection.log
+
+## ESTIMATED IMPACT
+- F1 scores may be inflated by 1-2% due to leakage
+- True performance likely 1-2% lower than reported
+
+## CLEAN DATA LOCATION
+- data/preprocessed_clean/ (use this for all new experiments)
+
+## ACTION TAKEN
+- All contaminated results moved to: results_contaminated/
+- Clean data generated with proper train-only scaler
+- Test scripts updated to use clean data
