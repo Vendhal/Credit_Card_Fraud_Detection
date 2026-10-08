@@ -25,6 +25,7 @@ import sys
 import os
 import time
 import json
+import argparse
 from datetime import datetime
 from sklearn.metrics import (f1_score, precision_score, recall_score,
                              confusion_matrix, classification_report,
@@ -284,7 +285,7 @@ def evaluate_safe(gc, X_test, y_test):
     }
 
 
-def main():
+def main(n_folds=5, n_models=25, rounds=50):
     """🚀 Main execution - ULTIMATE SAFE PIPELINE"""
     print("\n" + "="*80)
     print("🔥🔥🔥 ULTIMATE PIPELINE: HIVE GAN + SAFE OOF 🔥🔥🔥")
@@ -311,11 +312,6 @@ def main():
     # Load data
     X_train, y_train, X_test, y_test, synthetic_count = load_data_with_hive()
     feature_names = [f'V{i}' for i in range(X_train.shape[1])]
-    
-    # Config
-    n_folds = 5
-    n_models = 25
-    rounds = 50
     
     print(f"\n📊 Config:")
     print(f"   Synthetic: {synthetic_count}")
@@ -414,7 +410,13 @@ def main():
 
 
 if __name__ == "__main__":
-    gc, results = main()
+    parser = argparse.ArgumentParser(description="Run ultimate safe OOF pipeline")
+    parser.add_argument("--n-folds", type=int, default=5, help="Number of OOF folds")
+    parser.add_argument("--n-models", type=int, default=25, help="Number of models per side")
+    parser.add_argument("--rounds", type=int, default=50, help="Battle rounds")
+    args = parser.parse_args()
+    
+    gc, results = main(n_folds=args.n_folds, n_models=args.n_models, rounds=args.rounds)
     
     print("\n" + "="*80)
     print("✅ ULTIMATE PIPELINE SUCCESS!")

@@ -11,6 +11,7 @@ import pickle
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from pathlib import Path
+import joblib
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
@@ -74,13 +75,33 @@ except ImportError:
 # Load the trained model (singleton)
 _model = None
 _threshold = None
+_predictor_models = None
+
+
+def _extract_positive_probability(proba):
+    """Extract positive-class probability from model output."""
+    arr = np.asarray(proba)
+    if arr.size == 0:
+        raise ValueError("Empty probability output")
+    
+    if arr.ndim == 2:
+        if arr.shape[1] >= 2:
+            return float(arr[0, 1])
+        return float(arr[0, 0])
+    
+    if arr.ndim == 1:
+        if arr.shape[0] >= 2:
+            return float(arr[1])
+        return float(arr[0])
+    
+    return float(arr.reshape(-1)[0])
 
 def get_model():
     """Load the latest trained BOC model"""
-    global _model, _threshold, _cuml_available
+    global _model, _threshold, _cuml_available, _predictor_models
     
     if _model is not None:
-        return _model, _threshold
+        return _model, _threshold, _predictor_models
     
     # Check if cuML is available
     try:
@@ -95,7 +116,7 @@ def get_model():
     model_files = list(MODELS_DIR.glob('boc_model_*.pkl'))
     
     if not model_files:
-        return None, 0.5
+        return None, 0.5, []
     
     latest_model = max(model_files, key=lambda p: p.stat().st_mtime)
     
@@ -108,6 +129,19 @@ def get_model():
             state = pickle.load(f)
         
         _model = state
+        _predictor_models = []
+        
+        # Load serialized predictor models if present
+        model_paths = []
+        if isinstance(state, dict):
+            model_paths.extend(state.get('arena_models', {}).values())
+            model_paths.extend(state.get('kuru_models', {}).values())
+        
+        for model_path in model_paths:
+            try:
+                _predictor_models.append(joblib.load(model_path))
+            except Exception as e:
+                print(f"Skipping model {model_path}: {e}")
         
         # Try to get threshold from config
         if 'config' in state:
@@ -117,10 +151,11 @@ def get_model():
         
         print(f"🤖 Loaded model: {latest_model.name}")
         print(f"   cuML available: {_cuml_available}")
-        return _model, _threshold
+        print(f"   predictors loaded: {len(_predictor_models)}")
+        return _model, _threshold, _predictor_models
     except Exception as e:
         print(f"Error loading model: {e}")
-        return None, 0.5
+        return None, 0.5, []
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
@@ -159,52 +194,22 @@ def predict():
             threshold = result_data.get('threshold', 0.5)
     
     # Try to use actual model
-    model_state, _ = get_model()
+    model_state, _, predictor_models = get_model()
     
     if model_state is not None:
         try:
             print(f"Model state keys: {model_state.keys() if hasattr(model_state, 'keys') else 'No keys'}")
             
-            # Try different ways to get predictions
             probs = []
-            
-            # Method 1: Try arena
-            arena = model_state.get('arena')
-            if arena is not None:
+            for idx, predictor in enumerate(predictor_models or []):
                 try:
-                    if hasattr(arena, 'predict_proba'):
-                        arena_proba = arena.predict_proba(X)
-                        print(f"Arena proba: {arena_proba}")
-                        probs.append(arena_proba)
+                    if hasattr(predictor, 'predict_proba'):
+                        probs.append(_extract_positive_probability(predictor.predict_proba(X)))
                 except Exception as e:
-                    print(f"Arena error: {e}")
-            
-            # Method 2: Try kurukshetra
-            kurukshetra = model_state.get('kurukshetra')
-            if kurukshetra is not None:
-                try:
-                    if hasattr(kurukshetra, 'predict_proba'):
-                        kuru_proba = kurukshetra.predict_proba(X)
-                        print(f"Kuru proba: {kuru_proba}")
-                        probs.append(kuru_proba)
-                except Exception as e:
-                    print(f"Kuru error: {e}")
-            
-            # Method 3: Try cascade_ensemble
-            cascade = model_state.get('cascade_ensemble')
-            if cascade is not None:
-                print(f"Cascade type: {type(cascade)}")
+                    print(f"Predictor {idx} error: {e}")
             
             if probs:
-                avg_proba = np.mean(probs, axis=0)
-                print(f"Avg proba shape: {avg_proba.shape}, values: {avg_proba}")
-                
-                # Handle both [class0, class1] format or just [fraud_prob]
-                if avg_proba.shape[-1] >= 2:
-                    # Get probability of fraud (class 1)
-                    score = float(avg_proba[0][1]) if len(avg_proba.shape) > 1 else float(avg_proba[1])
-                else:
-                    score = float(avg_proba[0])
+                score = float(np.mean(probs))
                 
                 # If score is 0 or 1, something is wrong - use threshold-based fallback
                 if score < 0.01 or score > 0.99:
@@ -374,7 +379,7 @@ def get_latest_log():
 @app.route('/api/model-info')
 def model_info():
     """Get info about loaded model"""
-    model_state, _ = get_model()
+    model_state, _, predictor_models = get_model()
     
     if model_state is None:
         return jsonify({
@@ -383,16 +388,19 @@ def model_info():
             'model_type': None
         })
     
-    has_arena = 'arena' in model_state and model_state['arena'] is not None
-    has_kurukshetra = 'kurukshetra' in model_state and model_state['kurukshetra'] is not None
+    arena_count = len(model_state.get('arena_models', {})) if isinstance(model_state, dict) else 0
+    kuru_count = len(model_state.get('kuru_models', {})) if isinstance(model_state, dict) else 0
     
     return jsonify({
         'loaded': True,
         'model_type': 'BOC-GreatConvergence',
-        'has_arena': has_arena,
-        'has_kurukshetra': has_kurukshetra,
+        'has_arena': arena_count > 0,
+        'has_kurukshetra': kuru_count > 0,
+        'arena_models': arena_count,
+        'kurukshetra_models': kuru_count,
+        'predictors_loaded': len(predictor_models or []),
         'cuML_available': _cuml_available,
-        'message': 'Using real BOC model' if _cuml_available else 'cuML not available - using heuristic'
+        'message': 'Using real BOC model' if predictor_models else 'No predictor models loaded - using heuristic'
     })
 
 if __name__ == '__main__':

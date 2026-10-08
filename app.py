@@ -121,7 +121,13 @@ def run_step3_convergence(n_folds, battle_rounds, n_models):
     
     try:
         result = subprocess.run(
-            ["python", "ultimate_hive_convergence_safe_oof.py"],
+            [
+                "python",
+                "ultimate_hive_convergence_safe_oof.py",
+                "--n-folds", str(int(n_folds)),
+                "--rounds", str(int(battle_rounds)),
+                "--n-models", str(int(n_models))
+            ],
             capture_output=True,
             text=True,
             timeout=7200
@@ -369,11 +375,12 @@ with tab2:
     for rf in sorted(results_files, key=lambda p: p.stat().st_mtime, reverse=True)[:10]:
         with open(rf) as f:
             d = json.load(f)
+            nested = d.get('results', {})
             all_results.append({
                 'file': rf.name,
-                'f1': d.get('test_f1', 0),
-                'precision': d.get('test_precision', 0),
-                'recall': d.get('test_recall', 0),
+                'f1': nested.get('test_f1', d.get('test_f1', 0)),
+                'precision': nested.get('test_precision', d.get('test_precision', 0)),
+                'recall': nested.get('test_recall', d.get('test_recall', 0)),
                 'time': d.get('timestamp', '')
             })
     
